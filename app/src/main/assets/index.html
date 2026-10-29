@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b11">
+<title>CrushMate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--edge:rgba(255,255,255,.2);--mute:rgba(235,235,245,.62);--acc:#8b6cff;--acc2:#4fb3ff;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{position:relative;background:#0b0b11;color:#f4f4f8;font:17px/1.47 -apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;letter-spacing:-.011em}
+.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(60% 40% at 12% 8%,rgba(139,108,255,.55),transparent 70%),radial-gradient(55% 38% at 95% 32%,rgba(79,179,255,.42),transparent 70%),radial-gradient(60% 40% at 40% 102%,rgba(255,107,129,.26),transparent 70%),#0b0b11}
+.glass{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.05));-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--edge);border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 32px rgba(0,0,0,.25);overflow:hidden}
+.glass::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 42%)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--acc2);outline-offset:3px}
+.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+h1{font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+h3{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+h2{font-size:13px;font-weight:600;color:var(--mute);margin:28px 6px 10px}
+.sub{color:var(--mute);margin-top:8px;max-width:34ch}
+.muted{color:var(--mute)}
+
+/* Pages */
+.page{position:absolute;inset:0;overflow-y:auto;display:none;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 32px) 20px 136px}
+.page.on{display:flex}
+.page.chat{overflow:hidden;padding:calc(env(safe-area-inset-top,0px) + 24px) 0 0}
+.page>*{flex:none}
+
+/* Accueil */
+.hero{margin-top:28px;padding:26px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.orb{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 28%,#d9ceff,var(--acc) 42%,#3a2a9e);box-shadow:0 12px 32px rgba(139,108,255,.5)}
+.hero p{color:var(--mute)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 24px;border-radius:999px;font-weight:600;font-size:16px;text-decoration:none;width:100%}
+.btn.pri{background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 10px 26px rgba(139,108,255,.38);color:#fff;margin-top:6px}
+.btn.sec{background:rgba(255,255,255,.1);border:1px solid var(--edge);margin-top:20px}
+.list{padding:4px 0}
+.tip{display:flex;align-items:center;gap:14px;padding:18px 20px;text-decoration:none;border-top:1px solid rgba(255,255,255,.08)}
+.list .tip:first-child{border-top:0}
+.tip .tx{flex:1;min-width:0}
+.tip strong{display:block;font-weight:600;font-size:17px}
+.tip small{display:block;font-size:14px;color:var(--mute);margin-top:3px;line-height:1.4}
+.tip .i{width:16px;height:16px;color:var(--mute);flex:none}
+
+/* Tab bar flottante */
+.tabs{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);height:70px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;border-radius:35px;z-index:5}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:100%;border-radius:29px;font-size:11px;font-weight:500;color:var(--mute)}
+.tab[aria-current="page"]{color:#fff;background:rgba(255,255,255,.14)}
+
+/* Coach */
+.head{display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.head h1{font-size:30px}
+.circ{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;border:1px solid var(--edge)}
+.circ.solid{background:#fff;color:#111;border:0}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:16px 20px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:38px;padding:0 16px;border-radius:999px;font-size:14px;border:1px solid var(--edge);background:rgba(255,255,255,.07)}
+.log{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:8px 20px 16px}
+.b{max-width:82%;padding:13px 16px;border-radius:22px;font-size:16px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.c{align-self:flex-start;border-bottom-left-radius:8px}
+.m{align-self:flex-end;border-bottom-right-radius:8px;background:linear-gradient(135deg,rgba(139,108,255,.85),rgba(79,179,255,.7));border:1px solid rgba(255,255,255,.25)}
+.err{color:#ffb4bf}
+.b img{display:block;max-width:100%;max-height:220px;border-radius:14px;margin-bottom:8px}
+.composer{padding:0 16px calc(env(safe-area-inset-bottom,0px) + 96px)}
+.note{font-size:13px;color:var(--mute);text-align:center;padding:0 0 12px}
+.prev{display:flex;gap:10px;overflow-x:auto;padding:0 4px 12px}
+.prev:empty{display:none}
+.th{position:relative;flex:none}
+.th img{height:60px;border-radius:14px;display:block;border:1px solid var(--edge)}
+.th button{position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;background:#fff;color:#111;font-size:14px;line-height:22px}
+.capsule{display:flex;align-items:flex-end;gap:4px;padding:6px;border-radius:32px}
+textarea{flex:1;min-width:0;resize:none;max-height:120px;border:0;background:transparent;outline:0;padding:11px 6px;font-size:17px}
+textarea::placeholder{color:var(--mute)}
+.ghostic{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none}
+.ghostic.on{background:rgba(255,255,255,.22)}
+.ghostic:disabled{opacity:.4}
+
+/* Détail */
+.back{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--edge)}
+.detail{display:flex;flex-direction:column;gap:18px;margin-top:12px}
+.detail .cat{font-size:14px;color:var(--mute)}
+.card{padding:20px}
+.quote{font-size:19px;line-height:1.45;font-weight:500}
+.card .lab{font-size:13px;color:var(--mute);margin-bottom:6px}
+
+/* Réglages */
+.group{padding:0}
+.field{padding:14px 20px;border-top:1px solid rgba(255,255,255,.08)}
+.group .field:first-child{border-top:0}
+.field label{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+.field input,.field select{width:100%;border:0;background:transparent;outline:0;font-size:17px;padding:2px 0}
+.field select option{color:#000}
+.field:focus-within label{color:var(--acc2)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.actions .btn{margin:0;min-height:48px}
+.status{min-height:22px;font-size:15px;margin-top:14px;padding:0 6px}
+.foot{font-size:13px;color:var(--mute);padding:0 6px;margin-top:10px}
+.foot.warn{color:#ffd08a}
+
+.bg{animation:drift 22s ease-in-out infinite alternate}
+@keyframes drift{from{transform:scale(1)}to{transform:scale(1.07) translate(-1.5%,1%)}}
+@keyframes pageIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.page.on{animation:pageIn .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.hero,.cathead,.list .tip{animation:rise .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 55ms + 80ms)}
+.tip{transition:background .25s}
+.tip:active{background:rgba(255,255,255,.07)}
+.btn{transition:transform .2s,filter .2s}
+.btn:active{transform:scale(.97);filter:brightness(1.1)}
+.circ,.ghostic,.back,.chip{transition:transform .2s,background .25s}
+.chip:active,.circ:active,.ghostic:active,.back:active{transform:scale(.92)}
+.tab{transition:background .35s,color .35s}
+@keyframes bubble{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.b{animation:bubble .4s cubic-bezier(.2,.8,.2,1)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.orb{animation:float 6s ease-in-out infinite}
+.typing i{display:inline-block;width:7px;height:7px;margin:0 3px;border-radius:50%;background:currentColor;animation:dot 1.2s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+.cathead{display:flex;align-items:center;gap:14px;margin:28px 6px 10px}
+.cathead h2{margin:0;color:#f4f4f8;font-size:21px;font-weight:700;letter-spacing:-.02em}
+.ico-cat{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;flex:none;background:linear-gradient(135deg,rgba(139,108,255,.3),rgba(79,179,255,.18));border:1px solid var(--edge)}
+.cathead .ico-cat{width:54px;height:54px}
+.ico-cat svg{width:28px;height:28px;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.detail .cathead{margin:12px 6px 0}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="ic-contact" viewBox="0 0 48 48"><path d="M7 11h23v16H17l-7 6v-6H7z"/><path d="M24 21h17v12h-4v5l-6-5h-7" opacity=".55"/></symbol>
+<symbol id="ic-confiance" viewBox="0 0 48 48"><circle cx="22" cy="16" r="6"/><path d="M11 40c0-7 5-12 11-12s11 5 11 12"/><path d="M36 14l5-5M36 9h5v5"/></symbol>
+<symbol id="ic-style" viewBox="0 0 48 48"><path d="M24 17v-3a3.5 3.5 0 1 1 3.5-3.5"/><path d="M24 17L8 30h32z"/></symbol>
+<symbol id="ic-com" viewBox="0 0 48 48"><path d="M8 13h22v15H18l-7 5v-5H8z"/><circle cx="15" cy="20.5" r="1.4"/><circle cx="19" cy="20.5" r="1.4"/><circle cx="23" cy="20.5" r="1.4"/><path d="M28 22h12v9h-3v4l-5-4h-4" opacity=".55"/></symbol>
+<symbol id="ic-rdv" viewBox="0 0 48 48"><rect x="8" y="11" width="32" height="28" rx="7"/><path d="M8 20h32M17 7v7M31 7v7"/><path d="M18 30l4 4 8-8"/></symbol>
+<symbol id="ic-respect" viewBox="0 0 48 48"><path d="M24 7l14 5v10c0 9-6 15-14 19-8-4-14-10-14-19V12z"/><path d="M18 24l4 4 8-9"/></symbol></svg>
+
+<!-- ACCUEIL -->
+<section class="page on" id="p-accueil">
+  <h1>CrushMate</h1>
+  <p class="sub">Des messages justes, au bon moment.</p>
+  <div class="glass hero">
+    <div class="orb"></div>
+    <h3>Ton coach de conversation</h3>
+    <p>Écris, analyse et progresse. Pas de jeux, seulement de l’authenticité et du respect.</p>
+    <a class="btn pri" href="#coach">Ouvrir le coach</a>
+  </div>
+  <h2>À lire</h2>
+  <div class="glass list" id="home-tips"></div>
+  <a class="btn sec" href="#astuces">Toutes les astuces</a>
+</section>
+
+<!-- COACH -->
+<section class="page chat" id="p-coach">
+  <div class="head">
+    <h1>Coach</h1>
+    <button class="circ" id="clr" type="button" aria-label="Nouvelle conversation">
+      <svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="log" id="log"></div>
+  <div class="composer">
+    <div class="note">L’objectif : qu’elle ait envie de te voir.</div>
+    <div class="prev" id="prev"></div>
+    <form id="f">
+      <input type="file" id="file" accept="image/*" multiple hidden>
+      <div class="glass capsule">
+        <button type="button" class="ghostic" id="att" aria-label="Ajouter une capture">
+          <svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        <textarea id="inp" rows="1" placeholder="Demande au coach"></textarea>
+        <button type="button" class="ghostic" id="mic" aria-label="Dicter" hidden>
+          <svg class="i" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM6 11a6 6 0 0 0 12 0M12 17v4"/></svg></button>
+        <button type="submit" class="circ solid" id="go" aria-label="Envoyer">
+          <svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ASTUCES -->
+<section class="page" id="p-astuces">
+  <h1>Astuces</h1>
+  <p class="sub">Des repères courts, à lire avant d’écrire.</p>
+  <div id="all-tips"></div>
+</section>
+
+<!-- DÉTAIL -->
+<section class="page" id="p-astuce">
+  <a class="back" href="#astuces" aria-label="Retour aux astuces">
+    <svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
+  <div id="tip-body" class="detail"></div>
+</section>
+
+<!-- RÉGLAGES -->
+<section class="page" id="p-reglages">
+  <h1>Réglages</h1>
+  <p class="sub">Choisis le fournisseur d’IA qui alimente le coach.</p>
+  <h2>Connexion</h2>
+  <div class="glass group">
+    <div class="field"><label for="s-prov">Fournisseur</label><select id="s-prov"></select></div>
+    <div class="field"><label for="s-key">Clé API</label><input id="s-key" type="password" placeholder="Ta clé" autocomplete="off"></div>
+    <div class="field"><label for="s-url">Adresse de l’API</label><input id="s-url" type="url" placeholder="https://…"></div>
+    <div class="field"><label for="s-model">Modèle</label><input id="s-model" type="text" placeholder="Nom du modèle"></div>
+  </div>
+  <h2>Coach</h2>
+  <div class="glass group">
+    <div class="field"><label for="s-style">Style</label>
+      <select id="s-style">
+        <option value="complice">Complice</option>
+        <option value="romantique">Romantique</option>
+        <option value="direct">Direct</option>
+        <option value="drole">Drôle et taquin</option>
+      </select></div>
+  </div>
+  <div class="actions">
+    <button class="btn pri" id="s-save" type="button">Enregistrer</button>
+    <button class="btn sec" id="s-test" type="button" style="margin-top:0">Tester</button>
+  </div>
+  <button class="btn sec" id="s-erase" type="button" style="margin-top:10px">Effacer la clé</button>
+  <div class="status" id="s-st" role="status"></div>
+  <p class="foot warn">La clé est stockée sur cet appareil, sans chiffrement. Ne la partage pas.</p>
+  <p class="foot">Les messages partent directement de ton appareil vers le fournisseur choisi. Pour les captures, choisis un modèle capable de lire les images.</p>
+</section>
+
+<nav class="glass tabs">
+  <button class="tab" data-go="accueil" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</button>
+  <button class="tab" data-go="coach" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Coach</button>
+  <button class="tab" data-go="astuces" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z M5 17a3 3 0 0 1 3-3h11"/></svg>Astuces</button>
+  <button class="tab" data-go="reglages" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Réglages</button>
+</nav>
+
+<script>
+const $ = id => document.getElementById(id);
+const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
+const CHEV = '<svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+
+const PROV = {
+  builtin:   { n: 'Claude intégré', url: '', model: '' },
+  anthropic: { n: 'Anthropic (Claude)', url: 'https://api.anthropic.com', model: 'claude-sonnet-5-5' },
+  openai:    { n: 'OpenAI (ChatGPT)', url: 'https://api.openai.com/v1', model: 'gpt-4o' },
+  mistral:   { n: 'Mistral', url: 'https://api.mistral.ai/v1', model: 'mistral-large-latest' },
+  gemini:    { n: 'Google Gemini', url: 'https://generativelanguage.googleapis.com/v1beta', model: 'gemini-2.5-flash' },
+  custom:    { n: 'Personnalisé (compatible OpenAI)', url: '', model: '' }
+};
+const STY = {
+  complice: 'Style : complice et chaleureux.',
+  romantique: 'Style : romantique, doux, imagé.',
+  direct: 'Style : direct, assuré, concis.',
+  drole: 'Style : drôle, taquin, légèrement provocateur mais respectueux.'
+};
+const SYS = `Tu es « CrushMate », coach en séduction par messages. Réponds toujours en français, ton complice, direct, drôle, jamais vulgaire.
+MISSION : aider l’utilisateur à créer une vraie attirance et une vraie complicité avec une personne, par message, pour aboutir à un rendez-vous réel.
+PRINCIPES : authenticité (les messages doivent ressembler à l’utilisateur) ; respect (si la personne refuse ou se désintéresse, on arrête avec classe) ; aucune manipulation (ni mensonge, ni jeu psychologique, ni culpabilisation, ni relances en rafale) ; aucun contenu sexuel explicite ; si la personne est mineure, tu refuses.
+MÉTHODE : si le contexte manque, pose UNE question courte. Sinon donne 3 versions de message prêtes à envoyer (Taquin / Sincère / Audacieux), une phrase sur pourquoi ça marche, puis la suite selon qu’elle répond ou non.
+Messages courts, une idée par message. Réponse concise, lisible sur téléphone.
+CAPTURES : si des captures sont jointes, lis la conversation, résume en une ligne le ton et l’intérêt qu’elle montre, puis propose les 3 messages. Ne devine pas ce qui n’est pas visible.`;
+
+const CH = [
+  ['Premier message', 'Je veux lui écrire pour la première fois. Contexte : '],
+  ['Réponse froide', 'Elle répond par des messages très courts. Voici l’échange : '],
+  ['Plus de réponse', 'Elle ne répond plus depuis quelques jours. Dernier échange : '],
+  ['Proposer un rdv', 'Je veux lui proposer de nous voir. Où on en est : '],
+  ['Analyser son message', 'Aide-moi à comprendre son dernier message : '],
+  ['Gérer un refus', 'Elle m’a dit qu’elle n’était pas intéressée. Comment réagir avec classe ? ']
+];
+
+const CAT_ICON = {'Premier contact':'ic-contact','Confiance en soi':'ic-confiance','Image et style':'ic-style','Communication':'ic-com','Rendez-vous':'ic-rdv','Respect':'ic-respect'};
+const TIPS = [
+  { id: 'ouverture', c: 'Premier contact', t: 'Ouvrir avec un détail réel',
+    b: 'Un message générique passe inaperçu. Pars d’un élément précis de son profil ou d’un lieu que vous connaissez en commun.',
+    ex: '« Ta photo au bord de la lagune, c’est à Ganvié ? »', no: '« Salut, ça va ? »' },
+  { id: 'questions', c: 'Premier contact', t: 'Poser une question qui ouvre',
+    b: 'Une question qui demande plus qu’un oui ou un non relance la conversation et montre que tu écoutes.',
+    ex: '« Qu’est-ce qui t’a fait choisir ce métier ? »', no: '« Tu fais quoi ? »' },
+  { id: 'posture', c: 'Confiance en soi', t: 'Une posture détendue',
+    b: 'Épaules basses, gestes amples et calmes. La posture envoie un message avant même les mots.',
+    ex: 'Un bonjour souriant, sans précipitation.', no: 'Gestes saccadés, téléphone en main en permanence.' },
+  { id: 'calme', c: 'Confiance en soi', t: 'Garder son calme face à l’imprévu',
+    b: 'Un silence ou une réponse maladroite ne doit pas te déstabiliser. Respire, puis reprends le fil.',
+    ex: '« Ah, je me suis emballé, on reprend ? »', no: 'Paniquer et enchaîner les messages pour rattraper.' },
+  { id: 'objectifs', c: 'Confiance en soi', t: 'Avoir ses propres projets',
+    b: 'Une personne qui a ses passions et ses objectifs intéresse plus naturellement. Parle de ce que tu construis.',
+    ex: '« Je prépare un petit projet ce mois-ci, je te raconte ? »', no: 'Ne parler que d’elle, sans rien partager de toi.' },
+  { id: 'tenue', c: 'Image et style', t: 'Une tenue propre et adaptée',
+    b: 'Pas besoin de suivre la mode : des vêtements propres, bien ajustés et adaptés à l’occasion font déjà la différence.',
+    ex: 'Pour un premier verre : une chemise simple, un pantalon net, des chaussures propres.', no: 'Vêtements froissés ou trop usés pour l’occasion.' },
+  { id: 'soin', c: 'Image et style', t: 'Prendre soin de soi',
+    b: 'Sommeil, hygiène et activité physique régulière se voient et renforcent la confiance en soi.',
+    ex: 'Une routine simple : douche, soin du visage, sport deux fois par semaine.', no: 'Négliger son hygiène avant une rencontre.' },
+  { id: 'ecoute', c: 'Communication', t: 'Écouter plus que parler',
+    b: 'Pose une question, écoute vraiment la réponse, puis rebondis. On se souvient de ceux qui nous écoutent.',
+    ex: '« Tu disais revenir de Porto-Novo, ça s’est bien passé ? »', no: 'Enchaîner ses propres histoires sans jamais revenir à elle.' },
+  { id: 'relance', c: 'Communication', t: 'Relancer sur ce qu’elle dit',
+    b: 'Reprendre un mot ou un détail de sa réponse montre que tu l’as vraiment lue. C’est souvent ce qui fait avancer l’échange.',
+    ex: 'Elle dit « je reviens de Porto-Novo » → « Porto-Novo un dimanche, ça ressemblait à quoi ? »', no: 'Changer de sujet dès la réponse reçue.' },
+  { id: 'humour', c: 'Communication', t: 'Taquiner sans rabaisser',
+    b: 'La taquinerie crée de la proximité quand elle vise une situation partagée ou un trait joyeux, jamais une faiblesse.',
+    ex: '« Tu annonces un café et tu arrives vingt minutes en retard. Je note. »', no: 'Une remarque sur son apparence ou son passé.' },
+  { id: 'sujets', c: 'Communication', t: 'Choisir des sujets légers',
+    b: 'Voyages, musique, projets, bons plans : ces sujets ouvrent la conversation. Évite l’argent, la politique ou les ex au début.',
+    ex: '« Tu as une adresse favorite pour te détendre à Cotonou ? »', no: 'Parler de ses anciennes relations dès le premier échange.' },
+  { id: 'equilibre', c: 'Communication', t: 'Garder son équilibre',
+    b: 'Répondre en quelques secondes à chaque message et tout miser sur une seule personne envoie un signal de disponibilité excessive.',
+    ex: '« Je suis en réunion, je te réponds ce soir. »', no: 'Répondre instantanément à chaque message, sans jamais laisser de temps.' },
+  { id: 'rdv', c: 'Rendez-vous', t: 'Proposer un plan précis',
+    b: 'Une proposition vague fatigue. Un moment, un lieu et une alternative rendent la réponse facile, oui ou non.',
+    ex: '« Jeudi vers 18 h, on prend un jus à Cadjehoun ? Ou samedi matin si jeudi ne va pas. »', no: '« On devrait se voir un jour. »' },
+  { id: 'silence', c: 'Rendez-vous', t: 'Gérer le silence avec élégance',
+    b: 'Un silence n’est pas toujours un refus. Une seule relance, légère et sans reproche, suffit. Ensuite, laisse la porte ouverte.',
+    ex: '« Pas de souci si ta semaine est chargée. Dis-moi quand tu as un moment. »', no: 'Trois messages de suite, ou une pointe de reproche.' },
+  { id: 'premier', c: 'Rendez-vous', t: 'Un premier rendez-vous simple',
+    b: 'Un lieu public, une durée courte, un café ou une balade. Le but est de passer un bon moment, pas de tout régler d’un coup.',
+    ex: '« On prend un café une heure, et si ça marche on enchaîne ? »', no: 'Un programme chargé ou un rendez-vous trop long dès le départ.' },
+  { id: 'refus', c: 'Respect', t: 'Accepter un refus',
+    b: 'Un « non merci » mérite un « très bien, merci de me l’avoir dit ». Partir avec classe reste la meilleure façon d’être respecté.',
+    ex: '« Compris, merci pour ta franchise. Passe une belle journée. »', no: 'Insister, demander pourquoi, ou se vexer.' },
+  { id: 'interet', c: 'Respect', t: 'Dire clairement son intérêt',
+    b: 'Exprimer ton intérêt simplement est respectueux. C’est ensuite à l’autre de répondre librement, sans pression.',
+    ex: '« Tu me plais bien, j’aimerais qu’on se voie. Qu’en penses-tu ? »', no: 'Tourner autour du pot pendant des semaines, ou insister après un non.' },
+  { id: 'confiance', c: 'Respect', t: 'Oser sans forcer',
+    b: 'L’assurance vient de l’attitude, pas de la pression. Tu peux montrer ton intérêt tout en laissant à l’autre le choix de la suite.',
+    ex: '« J’aime bien discuter avec toi. Ça te dirait qu’on se voie cette semaine ? »', no: 'Multiplier les compliments en attendant une réaction.' }
+];
+const CATS = [...new Set(TIPS.map(t => t.c))];
+
+/* ---------- Routage ---------- */
+const PAGES = ['accueil', 'coach', 'astuces', 'astuce', 'reglages'];
+function tipLink(t, i) {
+  const a = el('a', 'tip'); a.href = '#astuce/' + t.id; a.style.setProperty('--i', i);
+  const ic = el('div', 'ico-cat'); ic.innerHTML = '<svg viewBox="0 0 48 48"><use href="#' + CAT_ICON[t.c] + '"/></svg>';
+  const tx = el('div', 'tx'); tx.append(el('strong', '', t.t), el('small', '', t.b));
+  a.append(ic, tx); a.insertAdjacentHTML('beforeend', CHEV);
+  return a;
+}
+function catHead(c, n) {
+  const hd = el('div', 'cathead'); hd.style.setProperty('--i', n);
+  const ic = el('div', 'ico-cat'); ic.innerHTML = '<svg viewBox="0 0 48 48"><use href="#' + CAT_ICON[c] + '"/></svg>';
+  hd.append(ic, el('h2', '', c)); return hd;
+}
+function renderTips() {
+  $('home-tips').replaceChildren(...TIPS.slice(0, 3).map((t, i) => tipLink(t, i)));
+  const frag = document.createDocumentFragment(); let n = 0;
+  CATS.forEach(c => {
+    frag.append(catHead(c, n++));
+    const g = el('div', 'glass list');
+    TIPS.filter(t => t.c === c).forEach(t => g.append(tipLink(t, n++)));
+    frag.append(g);
+  });
+  $('all-tips').replaceChildren(frag);
+}
+function renderDetail(id) {
+  const t = TIPS.find(x => x.id === id);
+  const box = $('tip-body');
+  if (!t) { box.replaceChildren(el('p', 'muted', 'Astuce introuvable.')); return; }
+  const q = el('div', 'glass card'); q.append(el('div', 'lab', 'Exemple'), el('div', 'quote', t.ex));
+  const av = el('div', 'glass card'); av.append(el('div', 'lab', 'À éviter'), el('div', '', t.no));
+  const btn = el('button', 'btn pri', 'Travailler ça avec le coach'); btn.type = 'button';
+  btn.onclick = () => { $('inp').value = 'Je veux travailler : ' + t.t + '. Contexte : '; location.hash = 'coach'; };
+  box.replaceChildren(catHead(t.c, 0), el('h1', '', t.t), el('p', 'muted', t.b), q, av, btn);
+}
+function route() {
+  const [name, arg] = (location.hash || '#accueil').slice(1).split('/');
+  const p = PAGES.includes(name) ? name : 'accueil';
+  document.querySelectorAll('.page').forEach(s => s.classList.toggle('on', s.id === 'p-' + p));
+  if (p === 'astuce') renderDetail(arg);
+  const active = p === 'astuce' ? 'astuces' : p;
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.dataset.go === active) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
+  });
+  const pg = document.querySelector('.page.on');
+  if (pg && !pg.classList.contains('chat')) pg.scrollTop = 0;
+}
+document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { location.hash = b.dataset.go; }));
+window.addEventListener('hashchange', route);
+
+/* ---------- Coach ---------- */
+const log = $('log'), inp = $('inp'), go = $('go'), prev = $('prev'), fileIn = $('file');
+let hist = [], pend = [], busy = false, rec = null, builtin = null;
+
+function addMsg(cls, text, urls) {
+  const d = el('div', 'b glass ' + cls);
+  (urls || []).forEach(u => { const im = el('img'); im.src = u; d.append(im); });
+  if (text) d.append(document.createTextNode(text));
+  log.append(d); log.scrollTop = log.scrollHeight;
+  return d;
+}
+function welcome() {
+  addMsg('c', 'Salut ! Envoie une capture de la discussion (+), dicte un vocal (micro) ou décris la situation. Je te propose des messages prêts à envoyer.');
+}
+function renderPrev() {
+  prev.replaceChildren(...pend.map((p, i) => {
+    const d = el('div', 'th'); const im = el('img'); im.src = p.url;
+    const x = el('button', '', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Retirer');
+    x.onclick = () => { URL.revokeObjectURL(p.url); pend.splice(i, 1); renderPrev(); };
+    d.append(im, x); return d;
+  }));
+}
+CH.forEach(c => {
+  const b = el('button', 'chip glass', c[0]); b.type = 'button';
+  b.onclick = () => { inp.value = c[1]; inp.focus(); };
+  $('chips').append(b);
+});
+$('att').onclick = () => fileIn.click();
+fileIn.onchange = () => {
+  Array.from(fileIn.files).forEach(f => { if (pend.length < 4) pend.push({ blob: f, url: URL.createObjectURL(f) }); });
+  fileIn.value = ''; renderPrev();
+};
+$('clr').onclick = () => { if (busy) return; hist = []; pend = []; renderPrev(); log.replaceChildren(); welcome(); };
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SR) {
+  $('mic').hidden = false;
+  $('mic').onclick = () => {
+    if (rec) { rec.stop(); return; }
+    const r = new SR(); rec = r; r.lang = 'fr-FR'; r.continuous = true; r.interimResults = true;
+    const base = inp.value ? inp.value + ' ' : '';
+    r.onresult = e => { let s = ''; for (let i = 0; i < e.results.length; i++) s += e.results[i][0].transcript; inp.value = base + s; };
+    r.onend = r.onerror = () => { rec = null; $('mic').classList.remove('on'); };
+    try { r.start(); $('mic').classList.add('on'); } catch (e) { rec = null; }
+  };
+}
+
+/* ---------- Connecteurs IA ---------- */
+function shrink(b) {
+  return new Promise((res, rej) => {
+    const im = new Image(), u = URL.createObjectURL(b);
+    im.onload = () => {
+      const k = Math.min(1, 1280 / Math.max(im.width, im.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(u);
+      res(c.toDataURL('image/jpeg', .85).split(',')[1]);
+    };
+    im.onerror = rej; im.src = u;
+  });
+}
+function check(res, d) {
+  if (res.ok) return;
+  const raw = d && d.error ? (d.error.message || d.error) : '';
+  throw new Error(res.status === 401 || res.status === 403 ? 'Clé refusée. Vérifie-la dans Réglages.'
+    : res.status === 404 ? 'Modèle ou adresse introuvable. Vérifie-les dans Réglages.'
+    : res.status === 429 ? 'Trop de demandes. Réessaie dans un instant.'
+    : 'Erreur ' + res.status + (raw ? ' : ' + String(raw).slice(0, 120) : ''));
+}
+async function ask(msgs, sys, blobs, max) {
+  const p = cfg.provider, last = msgs.length - 1;
+  if (p === 'builtin') {
+    if (!builtin) throw new Error('Claude intégré indisponible ici. Choisis un autre fournisseur.');
+    const m = msgs.map((x, i) => i === 0 ? { role: x.role, content: sys + '\n\n---\nMessage : ' + x.content } : x);
+    const o = { cache: false }; if (blobs.length) o.images = blobs;
+    return (await builtin(m, o)).text;
+  }
+  if (!cfg.key) throw new Error('nokey');
+  const base = (cfg.url || PROV[p].url).replace(/\/+$/, '');
+  const model = cfg.model || PROV[p].model;
+  const imgs = blobs.length ? await Promise.all(blobs.map(shrink)) : [];
+  let res, d;
+
+  if (p === 'anthropic') {
+    const m = msgs.map((x, i) => (i !== last || !imgs.length) ? x :
+      { role: x.role, content: [...imgs.map(b => ({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b } })), { type: 'text', text: x.content }] });
+    res = await fetch(base + '/v1/messages', { method: 'POST', headers: {
+      'content-type': 'application/json', 'x-api-key': cfg.key, 'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model, max_tokens: max, system: sys, messages: m }) });
+    d = await res.json(); check(res, d);
+    return d.content.filter(c => c.type === 'text').map(c => c.text).join('\n');
+  }
+  if (p === 'gemini') {
+    const contents = msgs.map((x, i) => ({
+      role: x.role === 'assistant' ? 'model' : 'user',
+      parts: [...(i === last ? imgs.map(b => ({ inline_data: { mime_type: 'image/jpeg', data: b } })) : []), { text: x.content }]
+    }));
+    res = await fetch(base + '/models/' + encodeURIComponent(model) + ':generateContent', { method: 'POST', headers: {
+      'content-type': 'application/json', 'x-goog-api-key': cfg.key },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: { maxOutputTokens: max } }) });
+    d = await res.json(); check(res, d);
+    return ((d.candidates && d.candidates[0] && d.candidates[0].content.parts) || []).map(x => x.text || '').join('');
+  }
+  // OpenAI, Mistral et tout endpoint compatible OpenAI
+  const m = [{ role: 'system', content: sys }, ...msgs.map((x, i) => (i !== last || !imgs.length) ? x :
+    { role: x.role, content: [{ type: 'text', text: x.content }, ...imgs.map(b => ({ type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + b } }))] })];
+  res = await fetch(base + '/chat/completions', { method: 'POST', headers: {
+    'content-type': 'application/json', Authorization: 'Bearer ' + cfg.key },
+    body: JSON.stringify({ model, messages: m, max_tokens: max }) });
+  d = await res.json(); check(res, d);
+  return (d.choices && d.choices[0] && d.choices[0].message.content) || '';
+}
+function errMsg(e) {
+  if (e.message === 'nokey') return 'Ajoute ta clé dans Réglages.';
+  if (e instanceof TypeError) return 'Connexion impossible. Vérifie le réseau et l’adresse de l’API.';
+  return e.message || 'Le coach est indisponible pour le moment.';
+}
+
+/* ---------- Envoi ---------- */
+$('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const t = inp.value.trim();
+  if ((!t && !pend.length) || busy) return;
+  if (cfg.provider !== 'builtin' && !cfg.key) {
+    $('s-st').textContent = 'Ajoute ta clé API pour utiliser le coach.';
+    location.hash = 'reglages'; return;
+  }
+  if (rec) { try { rec.stop(); } catch (x) {} }
+  const imgs = pend.slice(); pend = []; renderPrev();
+  const blobs = imgs.map(p => p.blob);
+  hist.push({ role: 'user', content: (imgs.length ? '[' + imgs.length + ' capture(s) jointe(s)] ' : '') + (t || 'Analyse cette conversation et dis-moi quoi répondre.') });
+  addMsg('m', t, imgs.map(p => p.url));
+  inp.value = '';
+  const bub = addMsg('c', ''); bub.classList.add('typing'); bub.innerHTML = '<i></i><i></i><i></i>';
+  busy = true; go.disabled = true;
+  const part = hist.slice(-10); while (part.length && part[0].role !== 'user') part.shift();
+  try {
+    const out = await ask(part, SYS + '\n' + STY[cfg.style], blobs, 1000);
+    bub.textContent = out || 'Réponse vide. Réessaie.';
+    hist.push({ role: 'assistant', content: out });
+  } catch (err) {
+    hist.pop(); bub.textContent = errMsg(err); bub.classList.add('err');
+  }
+  busy = false; go.disabled = false; log.scrollTop = log.scrollHeight;
+});
+
+/* ---------- Réglages ---------- */
+let cfg = { provider: 'anthropic', key: '', url: '', model: '', style: 'complice' };
+const STORE = 'cc_v2';
+try { Object.assign(cfg, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) {}
+function save() { try { localStorage.setItem(STORE, JSON.stringify(cfg)); } catch (e) {} }
+function fillForm() {
+  $('s-prov').value = cfg.provider;
+  $('s-key').value = cfg.key;
+  $('s-url').value = cfg.url || PROV[cfg.provider].url;
+  $('s-model').value = cfg.model || PROV[cfg.provider].model;
+  $('s-style').value = cfg.style;
+}
+function readForm() {
+  cfg.provider = $('s-prov').value;
+  cfg.key = $('s-key').value.trim();
+  cfg.url = $('s-url').value.trim();
+  cfg.model = $('s-model').value.trim();
+  cfg.style = $('s-style').value;
+}
+function status(m) { $('s-st').textContent = m; }
+
+Object.keys(PROV).forEach(k => {
+  if (k === 'builtin') return;
+  const o = el('option', '', PROV[k].n); o.value = k; $('s-prov').append(o);
+});
+$('s-prov').onchange = () => { $('s-url').value = PROV[$('s-prov').value].url; $('s-model').value = PROV[$('s-prov').value].model; };
+$('s-save').onclick = () => { readForm(); save(); status('Réglages enregistrés.'); };
+$('s-erase').onclick = () => { cfg.key = ''; $('s-key').value = ''; save(); status('Clé effacée de cet appareil.'); };
+$('s-test').onclick = async () => {
+  readForm(); save(); status('Test en cours…');
+  try {
+    const t = await ask([{ role: 'user', content: 'Réponds uniquement : OK' }], 'Test de connexion.', [], 20);
+    status('Connexion réussie : ' + t.slice(0, 40));
+  } catch (e) { status('Échec : ' + errMsg(e)); }
+};
+
+(async () => {
+  try { if (window.claude && claude.use) builtin = await claude.use('sample'); } catch (e) {}
+  if (builtin) {
+    const o = el('option', '', PROV.builtin.n); o.value = 'builtin';
+    $('s-prov').prepend(o);
+    if (!localStorage.getItem(STORE)) cfg.provider = 'builtin';
+  }
+  fillForm();
+})();
+
+renderTips();
+fillForm();
+welcome();
+route();
+</script>
+</body>
+</html>
